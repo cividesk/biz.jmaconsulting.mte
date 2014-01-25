@@ -162,6 +162,10 @@ function mte_civicrm_managed(&$entities) {
  * To send headers in mail and also create activity
  */
 function mte_civicrm_alterMailParams(&$params) {
+  $backtrace = debug_backtrace();
+  if (isset($backtrace[5]['class']) && $backtrace[5]['class'] == 'CRM_Mailing_Form_Test') {
+    return '';
+  }
   $session   = CRM_Core_Session::singleton();
   $userID = $session->get('userID');
   $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, FALSE, FALSE, 'name');
@@ -197,6 +201,12 @@ function mte_civicrm_alterMailParams(&$params) {
   if(CRM_Utils_Array::value('id', $result)){
     $params['activityId'] = $result['id'];
     $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'" }';
+    $params['headers']['X-MC-Subaccount'] = mte_get_domain();
+
+    if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
+      $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'", "X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
+    }
+    
   }
 }
 
@@ -227,4 +237,29 @@ function mte_civicrm_buildForm($formName, &$form) {
     // add select for groups
     $form->add('select', 'group_id', ts('Group to notify'), array('' => ts('- any group -')) + CRM_Core_PseudoConstant::group());
   }
+}
+
+function mte_get_domain() {
+  $domain = '';
+  
+  if ($_SERVER['SCRIPT_NAME'] && $_SERVER['HTTP_HOST']) {
+    $domain = $_SERVER['HTTP_HOST'];   
+  }
+  
+  // try to grab it from the invoqued URL
+  if ( ($_SERVER['SERVER_NAME'])) {
+    $domain = $_SERVER['SERVER_NAME'];
+  }
+  // decompose if we have the full domain name
+  if (strpos($domain, '.') !== FALSE) {
+    $pieces = explode('.', $domain);
+    if ($pieces[0] == 'crm') {
+      // crm.domain.org
+      $domain = $pieces[1];
+    } else if (($pieces[1] == 'cividesk') && ($pieces[2] == 'com')) {
+      // domain.cividesk.com
+      $domain = $pieces[0];
+    }
+  }
+  return $domain;
 }
