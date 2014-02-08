@@ -40,7 +40,7 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
       $bounceType = array();
       $reponse = json_decode($_POST['mandrill_events'], TRUE);
       if (is_array($reponse)) {
-        $events = array('open','click','hard_bounce','soft_bounce','spam','reject');
+        $events = array('open','click','hard_bounce','soft_bounce','spam','reject', 'send');
         foreach ($reponse as $value) {
           //changes done to check if email exists in response array
           if (in_array($value['event'], $events) && CRM_Utils_Array::value('email', $value['msg'])) {
@@ -169,25 +169,31 @@ WHERE cc.is_deleted = 0 AND cc.is_deceased = 0 AND cgc.group_id = {$mailingBacke
               }
 
               // create activity for click and open event
-              if ($value['event'] == 'open' || $value['event'] == 'click' || $bType == 'Bounce') {
+              if ( in_array($value['event'], array('open', 'click', 'send') ) || $bType == 'Bounce') {
                 $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, FALSE, FALSE, 'name');
                 $sourceContactId = self::retrieveEmailContactId($value['msg']['sender'], TRUE);
-                if (!CRM_Utils_Array::value('contact_id', $sourceContactId['email'])) {
-                  continue;
-                }
+
                 // Update activity status only for civimail activity
-                if ( ! $is_trx_email && $bType == 'Bounce' ) {
+                if ( ! $is_trx_email && ( $bType == 'Bounce' || $value['event'] == 'send') ) {
                   $activity_id = CRM_Utils_Array::value('CiviCRM_Mandrill_id', $value['msg']['metadata']);
                   $get_activity = civicrm_api( 'activity','get',array('id' => $activity_id, 'version' => 3 ) );
                   if (!empty($get_activity['values'])) {
                     $activityParams = $get_activity['values'][$activity_id];
                     $activityParams['status_id'] = 5; //Unreachable, change status to Unreachable
+                    if ($value['event'] == 'send' ) {
+                      $activityParams['status_id'] = 2; //Unreachable, change status to Completed
+                    }
                     $activityParams['version']   = 3;
+                    civicrm_api('activity','create',$activityParams);
                   } else {
                     // For CiviMail update activity only for bounce type event
                     continue;
                   }
-                } else {
+                } else if ( $is_trx_email && ($value['event'] == 'open' || $value['event'] == 'click' || $bType == 'Bounce') ) {
+                  if (!CRM_Utils_Array::value('contact_id', $sourceContactId['email'])) {
+                    continue;
+                  }
+
                   // create  new activity for transactional emails
                   $activityParams = array( 
                     'source_contact_id' => $sourceContactId['email']['contact_id'],
@@ -203,8 +209,8 @@ WHERE cc.is_deleted = 0 AND cc.is_deceased = 0 AND cgc.group_id = {$mailingBacke
                     $activityParams['assignee_contact_id'] = $assignedContacts;
                     $activityParams['details'] = $mailBody;
                   }
+                  civicrm_api('activity','create',$activityParams);
                 }
-                civicrm_api('activity','create',$activityParams);
               }
             }
           }
