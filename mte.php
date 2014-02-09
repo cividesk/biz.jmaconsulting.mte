@@ -163,8 +163,10 @@ function mte_civicrm_managed(&$entities) {
  */
 function mte_civicrm_alterMailParams(&$params) {
   $backtrace = debug_backtrace();
-  if (isset($backtrace[5]['class']) && $backtrace[5]['class'] == 'CRM_Mailing_Form_Test') {
-    return '';
+  if ( (isset($backtrace[6]['class']) && in_array( $backtrace[6]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) ) ||
+       (isset($backtrace[5]['class']) && in_array( $backtrace[5]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) )
+     ) {
+    return false;
   }
   $session   = CRM_Core_Session::singleton();
   $userID = $session->get('userID');
