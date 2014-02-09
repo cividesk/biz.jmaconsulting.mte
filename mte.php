@@ -203,7 +203,7 @@ function mte_civicrm_alterMailParams(&$params) {
   if(CRM_Utils_Array::value('id', $result)){
     $params['activityId'] = $result['id'];
     $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'" }';
-    $params['headers']['X-MC-Subaccount'] = mte_get_domain();
+    //$params['headers']['X-MC-Subaccount'] = '';
 
     if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
       $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'", "X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
@@ -241,27 +241,3 @@ function mte_civicrm_buildForm($formName, &$form) {
   }
 }
 
-function mte_get_domain() {
-  $domain = '';
-  
-  if ($_SERVER['SCRIPT_NAME'] && $_SERVER['HTTP_HOST']) {
-    $domain = $_SERVER['HTTP_HOST'];   
-  }
-  
-  // try to grab it from the invoqued URL
-  if ( ($_SERVER['SERVER_NAME'])) {
-    $domain = $_SERVER['SERVER_NAME'];
-  }
-  // decompose if we have the full domain name
-  if (strpos($domain, '.') !== FALSE) {
-    $pieces = explode('.', $domain);
-    if ($pieces[0] == 'crm') {
-      // crm.domain.org
-      $domain = $pieces[1];
-    } else if (($pieces[1] == 'cividesk') && ($pieces[2] == 'com')) {
-      // domain.cividesk.com
-      $domain = $pieces[0];
-    }
-  }
-  return $domain;
-}
