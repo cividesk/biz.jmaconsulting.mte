@@ -165,7 +165,7 @@ function mte_civicrm_alterMailParams(&$params) {
   $backtrace = debug_backtrace();
   if ( (isset($backtrace[6]['class']) && in_array( $backtrace[6]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) ) ||
        (isset($backtrace[5]['class']) && in_array( $backtrace[5]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) )
-     ) {
+     ) { 
     return false;
   }
   $session   = CRM_Core_Session::singleton();
@@ -203,7 +203,9 @@ function mte_civicrm_alterMailParams(&$params) {
   if(CRM_Utils_Array::value('id', $result)){
     $params['activityId'] = $result['id'];
     $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'" }';
-    //$params['headers']['X-MC-Subaccount'] = '';
+    if(defined("MANDRILL_SUBACCOUNT")) {
+       $params['headers']['X-MC-Subaccount'] = MANDRILL_SUBACCOUNT;
+    }
 
     if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
       $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'", "X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
