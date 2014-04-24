@@ -37,6 +37,11 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
     if ($secretCode != $mandrillSecret['Secret Code']) {
       //return FALSE;
     }
+    $mailing_job_file = 'CRM_Mailing_DAO_MailingJob';
+    $currentVer = CRM_Core_BAO_Domain::version();
+    if (version_compare($currentVer, '4.4.alpha1') < 0) {
+      $mailing_job_file = 'CRM_Mailing_DAO_Job';
+    }
     if (CRM_Utils_Array::value('mandrill_events', $_POST)) {
       $bounceType = array();
       $reponse = json_decode($_POST['mandrill_events'], TRUE);
@@ -63,7 +68,7 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
               
               list($match, $action, $job, $queue, $hash) = $matches;
               $event_queue_id = $queue;
-              $mail_id = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Job', $job, 'mailing_id', 'id');
+              $mail_id = CRM_Core_DAO::getFieldValue($mailing_job_file, $job, 'mailing_id', 'id');
               
             } else {
               $mail = new CRM_Mailing_DAO_Mailing();
@@ -88,7 +93,7 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
               }
               if ($is_trx_email) {
                 $params = array(
-                  'job_id' => CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_Job', $mail_id, 'id', 'mailing_id'),
+                  'job_id' => CRM_Core_DAO::getFieldValue($mailing_job_file, $mail_id, 'id', 'mailing_id'),
                   'contact_id' => $emails['email']['contact_id'],
                   'email_id' => $emails['email']['id'],
                   'activity_id' => CRM_Utils_Array::value('metadata', $value['msg']) ? CRM_Utils_Array::value('CiviCRM_Mandrill_id', $value['msg']['metadata']) : null

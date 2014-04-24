@@ -65,8 +65,14 @@ function mte_civicrm_install() {
   //create entry in civicrm_mailing
   $mailing = CRM_Mailing_BAO_Mailing::add($mailingParams, CRM_Core_DAO::$_nullArray);
 
+  //4.4.* Job.php file name changes to MailingJob.php
+  $mailing_job_file = new CRM_Mailing_DAO_MailingJob();
+  $currentVer = CRM_Core_BAO_Domain::version();
+  if (version_compare($currentVer, '4.4.alpha1') < 0) {
+    $mailing_job_file = new CRM_Mailing_DAO_Job();
+  }
   //add entry in civicrm_mailing_job
-  $saveJob = new CRM_Mailing_DAO_Job();
+  $saveJob = $mailing_job_file;
   $saveJob->start_date = $saveJob->end_date = date('YmdHis');
   $saveJob->status = 'Complete';
   $saveJob->job_type = "Special: All transactional emails being sent through Mandrill";
