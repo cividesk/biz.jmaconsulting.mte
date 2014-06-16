@@ -249,3 +249,6 @@ function mte_civicrm_buildForm($formName, &$form) {
   }
 }
 
+function mte_civicrm_idsException( &$skip ) {
+  $skip[] = 'civicrm/ajax/mte/callback';
+}
