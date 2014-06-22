@@ -232,7 +232,9 @@ function mte_civicrm_postEmailSend(&$params) {
       'version' => 3,
       'target_contact_id' => CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Email', $params['toEmail'], 'contact_id', 'email'), 
     );
-    $result = civicrm_api( 'activity','create',$activityParams );
+    if ( $activityParams['target_contact_id'] ) {
+      $result = civicrm_api( 'activity','create',$activityParams );
+    }
   }
 }
 
