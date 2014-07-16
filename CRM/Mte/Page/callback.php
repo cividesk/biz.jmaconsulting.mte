@@ -73,7 +73,9 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
               $event_queue_id = $queue;
               $mail_id = CRM_Core_DAO::getFieldValue($mailing_job_file, $job, 'mailing_id', 'id');
               
-            } else {
+            } 
+            /*
+            else {
               $mail = new CRM_Mailing_DAO_Mailing();
               $mail->domain_id       = CRM_Core_Config::domainID();
               $mail->subject         = "***All Transactional Emails***";
@@ -88,6 +90,8 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
                 $mail_id = $mail->id;
               }
             }
+            */
+            
             if ($mail_id) {
               $emails = self::retrieveEmailContactId($value['msg']['email']);
               
@@ -183,7 +187,7 @@ WHERE cc.is_deleted = 0 AND cc.is_deceased = 0 AND cgc.group_id = {$mailingBacke
                 }
                 break;
               }
-
+              /*
               // create activity for click and open event
               if ( in_array($value['event'], array('open', 'click', 'send') ) || $bType == 'Bounce') {
                 $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, FALSE, FALSE, 'name');
@@ -228,6 +232,7 @@ WHERE cc.is_deleted = 0 AND cc.is_deceased = 0 AND cgc.group_id = {$mailingBacke
                   civicrm_api('activity','create',$activityParams);
                 }
               }
+              */
             }
           }
         }

@@ -168,6 +168,7 @@ function mte_civicrm_managed(&$entities) {
  * To send headers in mail and also create activity
  */
 function mte_civicrm_alterMailParams(&$params) {
+  /*
   $backtrace = debug_backtrace();
   if ( (isset($backtrace[6]['class']) && in_array( $backtrace[6]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) ) ||
        (isset($backtrace[5]['class']) && in_array( $backtrace[5]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) )
@@ -218,6 +219,14 @@ function mte_civicrm_alterMailParams(&$params) {
     }
     
   }
+  */
+  
+  if(defined("MANDRILL_SUBACCOUNT")) {
+    $params['headers']['X-MC-Subaccount'] = MANDRILL_SUBACCOUNT;
+  }
+  if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
+    $params['headers']['X-MC-Metadata'] = '{"X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
+  }       
 }
 
 /**
