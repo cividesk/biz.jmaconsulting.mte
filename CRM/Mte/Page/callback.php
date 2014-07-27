@@ -71,7 +71,9 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
               
               list($match, $action, $job, $queue, $hash) = $matches;
               $event_queue_id = $queue;
-              $mail_id = CRM_Core_DAO::getFieldValue($mailing_job_file, $job, 'mailing_id', 'id');
+              if ($job) {
+                $mail_id = CRM_Core_DAO::getFieldValue($mailing_job_file, $job, 'mailing_id', 'id');
+              }
               
             } 
             /*
