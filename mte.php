@@ -33,6 +33,11 @@ require_once 'mte.civix.php';
  * Implementation of hook_civicrm_config
  */
 function mte_civicrm_config(&$config) {
+  $extRoot = dirname( __FILE__ ) . DIRECTORY_SEPARATOR;
+  if (is_dir($extRoot . 'packages')) {
+    set_include_path($extRoot . 'packages' . PATH_SEPARATOR . get_include_path());
+  }
+
   _mte_civix_civicrm_config($config);
   if ($config->userFramework == 'Joomla' && 'civicrm/ajax/mte/callback' == $_GET['task']) {
     $_SESSION['mte_temp'] = 1; 
@@ -220,9 +225,9 @@ function mte_civicrm_alterMailParams(&$params) {
     
   }
   */
-  
-  if(defined("MANDRILL_SUBACCOUNT")) {
-    $params['headers']['X-MC-Subaccount'] = MANDRILL_SUBACCOUNT;
+  $mandrill_subaccount = CRM_Mte_Mandrill::getSettings('mandrill_subaccount');
+  if($mandrill_subaccount) {
+    $params['headers']['X-MC-Subaccount'] = $mandrill_subaccount;
   }
   if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
     $params['headers']['X-MC-Metadata'] = '{"X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
@@ -247,16 +252,62 @@ function mte_civicrm_postEmailSend(&$params) {
   }
 }
 
-function mte_civicrm_buildForm($formName, &$form) {
+function mte_civicrm_validate($formName, $fields, $files, $form) {
   if ($formName == 'CRM_Admin_Form_Setting_Smtp') {
+    if ( 'smtp.mandrillapp.com' == CRM_Utils_Array::value('smtpServer', $fields) && 
+      CRM_Utils_Array::value('smtpAuth', $fields) && 
+      CRM_Utils_Array::value('smtpPassword', $fields) && 
+      CRM_Utils_Array::value('mandrill_subaccount', $fields) ) {
+      try {
+        $smtpPassword = CRM_Utils_Array::value('smtpPassword', $fields);
+        $id = CRM_Utils_Array::value('mandrill_subaccount', $fields);
+        require_once 'Mandrill.php';
+        $mandrill = new Mandrill($smtpPassword);
+        $result = $mandrill->subaccounts->getList($id);
+        if ( empty($result) ) {
+          $add = $mandrill->subaccounts->add($id);
+          if ( !empty($add)) {
+            CRM_Core_Session::setStatus( ts('Mandrill Subaccount "%1" successfully created.', array(1 => $id) ), ts('Info'), 'info');
+          }
+        } else {
+          CRM_Core_Session::setStatus( ts('Mandrill Subaccount "%1" already present.', array(1 => $id) ), ts('Info'), 'info');
+        }
+      } catch (Exception $e ) {
+        CRM_Core_Error::fatal('Mandrill exception: ' .  $e->getMessage());
+      }
+    }
+  }
+}
+function mte_civicrm_postProcess($formName, $form) {
+  if ($formName == 'CRM_Admin_Form_Setting_Smtp') {
+    foreach (CRM_Mte_Mandrill::getMandrillParams() as $key => $name) {
+      CRM_Mte_Mandrill::setSetting(CRM_Utils_Array::value($name, $form->_submitValues, 0), $name);
+    }
+  }
+}
+function mte_civicrm_buildForm($formName, &$form) {
+
+  if ($formName == 'CRM_Admin_Form_Setting_Smtp') {
+    // Mandrill call back url
     $element = $form->add('text', 'mandril_post_url', ts('Mandrill Post to URL'));
-    $mandrillSecret = CRM_Core_OptionGroup::values('mandrill_secret', TRUE);
-    $default['mandril_post_url'] = CRM_Utils_System::url('civicrm/ajax/mte/callback', "mandrillSecret={$mandrillSecret['Secret Code']}", TRUE, NULL, FALSE, TRUE);
+    
+    // Mandrill Sub account id
+    $form->add('text', 'mandrill_subaccount', ts('Mandrill Subaccount'));
+    // select for groups
+    $form->add('select', 'group_id', ts('Group to notify'), array('' => ts('- any group -')) + CRM_Core_PseudoConstant::group());
+
+    $mandrill_settings = CRM_Mte_Mandrill::getSettings();
+
+    if ( empty($mandrill_settings['secret_code'] ) ) {
+        $mandrill_settings['secret_code'] = CRM_Mte_Mandrill::generateSecretCode();
+    }
+    $form->add('hidden', 'secret_code', $mandrill_settings['secret_code']);
+
+    $default['mandril_post_url'] = CRM_Utils_System::url('civicrm/ajax/mte/callback', "mandrillSecret=" . $mandrill_settings['secret_code'], TRUE, NULL, FALSE, TRUE);
+
+    $default = array_merge($default, $mandrill_settings);
     $form->setDefaults($default);
     $element->freeze();
-    
-    // add select for groups
-    $form->add('select', 'group_id', ts('Group to notify'), array('' => ts('- any group -')) + CRM_Core_PseudoConstant::group());
   }
 }
 

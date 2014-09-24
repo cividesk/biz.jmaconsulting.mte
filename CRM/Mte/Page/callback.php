@@ -35,8 +35,8 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
     /*
     // We are not using Secret code for mandrill extension
     $secretCode = CRM_Utils_Type::escape($_GET['mandrillSecret'], 'String');
-    $mandrillSecret = CRM_Core_OptionGroup::values('mandrill_secret', TRUE);
-    if ($secretCode != $mandrillSecret['Secret Code']) {
+    $mandrillSecret = CRM_Mte_Mandrill::getSettings('secret_code');
+    if ($secretCode != $mandrillSecret) {
       //return FALSE;
     }
     */

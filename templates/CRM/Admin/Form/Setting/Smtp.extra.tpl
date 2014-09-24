@@ -27,19 +27,24 @@
   <tr class="crm-smtp-form-block-mandril_post_url">
     <td class="label">{$form.mandril_post_url.label}</td>
     <td>{$form.mandril_post_url.html}</td>
-  </tr>  
+  </tr>
   <tr class="crm-smtp-form-block-notify_group">
     <td class="label">{$form.group_id.label}</td>
     <td>{$form.group_id.html}
       </br><span class="description">{ts}Group to notify for hard and soft bounce.{/ts}</span>
     </td>
-  </tr>  
+  </tr>
+  <tr class="crm-smtp-form-block-mandrill_subaccount">
+    <td class="label">{$form.mandrill_subaccount.label}</td>
+    <td>{$form.mandrill_subaccount.html}</td>
+  </tr>    
 </tbody></table>
 <script type="text/javascript">
 {literal}
 cj(document).ready(function(){
   cj('.crm-smtp-form-block-mandril_post_url').insertAfter('.crm-smtp-form-block-smtpPassword');
   cj('.crm-smtp-form-block-notify_group').insertAfter('.crm-smtp-form-block-mandril_post_url');
+  cj('.crm-smtp-form-block-mandrill_subaccount').insertAfter('.crm-smtp-form-block-mandril_post_url');
   hideShow();
   cj('#smtpServer').blur(function() {
     hideShow();
@@ -49,10 +54,12 @@ function hideShow() {
   if (cj('#smtpServer').val() == 'smtp.mandrillapp.com') {
      cj('.crm-smtp-form-block-mandril_post_url').show();
      cj('.crm-smtp-form-block-notify_group').show();
+     cj('.crm-smtp-form-block-mandrill_subaccount').show();
   }
   else {
      cj('.crm-smtp-form-block-mandril_post_url').hide();
      cj('.crm-smtp-form-block-notify_group').hide();
+     cj('.crm-smtp-form-block-mandrill_subaccount').hide();
   }
   
 }
