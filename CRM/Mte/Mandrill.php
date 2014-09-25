@@ -20,8 +20,8 @@
 
 class CRM_Mte_Mandrill {
 
-  CONST MANDRILL_SETTINGS = 'mandrill_settings';
-  static $mandrillParams  = array('mandrill_subaccount', 'group_id', 'secret_code' );
+  CONST MANDRILL_SETTINGS = 'Mandrill Settings';
+  static $mandrillParams  = array('subaccount', 'group_id', 'secret_code' );
 
   static function getSettings($name = NULL) {
     return CRM_Core_BAO_Setting::getItem(CRM_Mte_Mandrill::MANDRILL_SETTINGS, $name);

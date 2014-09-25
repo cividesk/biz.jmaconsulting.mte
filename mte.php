@@ -225,9 +225,9 @@ function mte_civicrm_alterMailParams(&$params) {
     
   }
   */
-  $mandrill_subaccount = CRM_Mte_Mandrill::getSettings('mandrill_subaccount');
-  if($mandrill_subaccount) {
-    $params['headers']['X-MC-Subaccount'] = $mandrill_subaccount;
+  $subaccount = CRM_Mte_Mandrill::getSettings('subaccount');
+  if($subaccount) {
+    $params['headers']['X-MC-Subaccount'] = $subaccount;
   }
   if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
     $params['headers']['X-MC-Metadata'] = '{"X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
@@ -257,10 +257,10 @@ function mte_civicrm_validate($formName, $fields, $files, $form) {
     if ( 'smtp.mandrillapp.com' == CRM_Utils_Array::value('smtpServer', $fields) && 
       CRM_Utils_Array::value('smtpAuth', $fields) && 
       CRM_Utils_Array::value('smtpPassword', $fields) && 
-      CRM_Utils_Array::value('mandrill_subaccount', $fields) ) {
+      CRM_Utils_Array::value('subaccount', $fields) ) {
       try {
         $smtpPassword = CRM_Utils_Array::value('smtpPassword', $fields);
-        $id = CRM_Utils_Array::value('mandrill_subaccount', $fields);
+        $id = CRM_Utils_Array::value('subaccount', $fields);
         require_once 'Mandrill.php';
         $mandrill = new Mandrill($smtpPassword);
         $result = $mandrill->subaccounts->getList($id);
@@ -292,7 +292,7 @@ function mte_civicrm_buildForm($formName, &$form) {
     $element = $form->add('text', 'mandril_post_url', ts('Mandrill Post to URL'));
     
     // Mandrill Sub account id
-    $form->add('text', 'mandrill_subaccount', ts('Mandrill Subaccount'));
+    $form->add('text', 'subaccount', ts('Mandrill Subaccount'));
     // select for groups
     $form->add('select', 'group_id', ts('Group to notify'), array('' => ts('- any group -')) + CRM_Core_PseudoConstant::group());
 
