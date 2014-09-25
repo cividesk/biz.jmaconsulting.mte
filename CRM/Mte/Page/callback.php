@@ -141,12 +141,15 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
                 if (empty($bounceType)) {
                   CRM_Core_PseudoConstant::populate($bounceType, 'CRM_Mailing_DAO_BounceType', TRUE, 'id', NULL, NULL, NULL, 'name');
                 }
-                $bounce             = new CRM_Mailing_Event_BAO_Bounce();
-                $bounce->time_stamp =  date('YmdHis', $value['ts']);
-                $bounce->event_queue_id = $event_queue_id;
-                $bounce->bounce_type_id = $bounceType["Mandrill $bType"];
-                $bounce->bounce_reason  = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_BounceType', $bounceType["Mandrill $bType"], 'description');
-                $bounce->save();
+                // Bounce Params
+                $bounceParams = array();
+                $bounceParams['time_stamp']     =  date('YmdHis', $value['ts']);
+                $bounceParams['event_queue_id'] = $event_queue_id;
+                $bounceParams['job_id']         = $job;
+                $bounceParams['hash']           = $hash;
+                $bounceParams['bounce_type_id'] = $bounceType["Mandrill $bType"];
+                $bounceParams['bounce_reason']  = CRM_Core_DAO::getFieldValue('CRM_Mailing_DAO_BounceType', $bounceType["Mandrill $bType"], 'description');
+                CRM_Mailing_Event_BAO_Bounce::create($bounceParams);
                 if (substr($value['event'], -7) == '_bounce') {
                   $mailingBackend = CRM_Core_BAO_Setting::getItem(CRM_Core_BAO_Setting::MAILING_PREFERENCES_NAME,
                     'mailing_backend'
