@@ -71,10 +71,11 @@ function mte_civicrm_install() {
   $mailing = CRM_Mailing_BAO_Mailing::add($mailingParams, CRM_Core_DAO::$_nullArray);
 
   //4.4.* Job.php file name changes to MailingJob.php
-  $mailing_job_file = new CRM_Mailing_DAO_MailingJob();
   $currentVer = CRM_Core_BAO_Domain::version();
   if (version_compare($currentVer, '4.4.alpha1') < 0) {
     $mailing_job_file = new CRM_Mailing_DAO_Job();
+  } else {
+    $mailing_job_file = new CRM_Mailing_DAO_MailingJob();
   }
   //add entry in civicrm_mailing_job
   $saveJob = $mailing_job_file;
@@ -173,7 +174,7 @@ function mte_civicrm_managed(&$entities) {
  * To send headers in mail and also create activity
  */
 function mte_civicrm_alterMailParams(&$params) {
-  /*
+
   $backtrace = debug_backtrace();
   if ( (isset($backtrace[6]['class']) && in_array( $backtrace[6]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) ) ||
        (isset($backtrace[5]['class']) && in_array( $backtrace[5]['class'], array( 'CRM_Mailing_Form_Test', 'CRM_Mailing_Page_Preview')) )
@@ -215,23 +216,24 @@ function mte_civicrm_alterMailParams(&$params) {
   if(CRM_Utils_Array::value('id', $result)){
     $params['activityId'] = $result['id'];
     $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'" }';
-    if(defined("MANDRILL_SUBACCOUNT")) {
-       $params['headers']['X-MC-Subaccount'] = MANDRILL_SUBACCOUNT;
+    $subaccount = CRM_Mte_Mandrill::getSettings('subaccount');
+    if($subaccount) {
+       $params['headers']['X-MC-Subaccount'] = $subaccount;
     }
 
     if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
       $params['headers']['X-MC-Metadata'] = '{"CiviCRM_Mandrill_id": "'.$result['id'].'", "X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
     }
-    
   }
-  */
+  /*
   $subaccount = CRM_Mte_Mandrill::getSettings('subaccount');
   if($subaccount) {
     $params['headers']['X-MC-Subaccount'] = $subaccount;
   }
   if (CRM_Utils_Array::value('X-CiviMail-Bounce', $params)) {
     $params['headers']['X-MC-Metadata'] = '{"X-CiviMail-Bounce" : "'.CRM_Utils_Array::value("X-CiviMail-Bounce", $params) .'"}';
-  }       
+  }
+  */
 }
 
 /**

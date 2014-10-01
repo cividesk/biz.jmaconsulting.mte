@@ -76,7 +76,7 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
               }
               
             } 
-            /*
+
             else {
               $mail = new CRM_Mailing_DAO_Mailing();
               $mail->domain_id       = CRM_Core_Config::domainID();
@@ -92,15 +92,16 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
                 $mail_id = $mail->id;
               }
             }
-            */
+
             
             if ($mail_id) {
               $emails = self::retrieveEmailContactId($value['msg']['email']);
               
-              if (!CRM_Utils_Array::value('contact_id', $emails['email'])) {
-                continue;
-              }
+
               if ($is_trx_email) {
+                if (!CRM_Utils_Array::value('contact_id', $emails['email'])) {
+                  continue;
+                }
                 $params = array(
                   'job_id' => CRM_Core_DAO::getFieldValue($mailing_job_file, $mail_id, 'id', 'mailing_id'),
                   'contact_id' => $emails['email']['contact_id'],
@@ -192,7 +193,7 @@ WHERE cc.is_deleted = 0 AND cc.is_deceased = 0 AND cgc.group_id = {$mailingBacke
                 }
                 break;
               }
-              /*
+
               // create activity for click and open event
               if ( in_array($value['event'], array('open', 'click', 'send') ) || $bType == 'Bounce') {
                 $activityTypes = CRM_Core_PseudoConstant::activityType(TRUE, FALSE, FALSE, 'name');
@@ -203,10 +204,14 @@ WHERE cc.is_deleted = 0 AND cc.is_deceased = 0 AND cgc.group_id = {$mailingBacke
                   $activity_id = CRM_Utils_Array::value('CiviCRM_Mandrill_id', $value['msg']['metadata']);
                   $get_activity = civicrm_api( 'activity','get',array('id' => $activity_id, 'version' => 3 ) );
                   if (!empty($get_activity['values'])) {
+                    $q = &CRM_Mailing_Event_BAO_Queue::verify($job,$event_queue_id, $hash );
                     $activityParams = $get_activity['values'][$activity_id];
                     $activityParams['status_id'] = 5; //Unreachable, change status to Unreachable
                     if ($value['event'] == 'send' ) {
                       $activityParams['status_id'] = 2; //Completed, change status to Completed
+                    }
+                    if($q->contact_id) {
+                      $activityParams['target_contact_id'] = $q->contact_id;
                     }
                     $activityParams['version']   = 3;
                     civicrm_api('activity','create',$activityParams);
@@ -237,7 +242,7 @@ WHERE cc.is_deleted = 0 AND cc.is_deceased = 0 AND cgc.group_id = {$mailingBacke
                   civicrm_api('activity','create',$activityParams);
                 }
               }
-              */
+
             }
           }
         }
