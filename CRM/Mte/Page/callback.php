@@ -40,20 +40,22 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
       //return FALSE;
     }
     */
-    $mailing_job_file = 'CRM_Mailing_DAO_MailingJob';
     $currentVer = CRM_Core_BAO_Domain::version();
     if (version_compare($currentVer, '4.4.alpha1') < 0) {
       $mailing_job_file = 'CRM_Mailing_DAO_Job';
+    } else {
+      $mailing_job_file = 'CRM_Mailing_DAO_MailingJob';
     }
     if (CRM_Utils_Array::value('mandrill_events', $_POST)) {
       $bounceType = array();
       $reponse = json_decode($_POST['mandrill_events'], TRUE);
       if (is_array($reponse)) {
+        $subaccount = CRM_Mte_Mandrill::getSettings('subaccount');
         $events = array('open','click','hard_bounce','soft_bounce','spam','reject', 'send');
         foreach ($reponse as $value) {
           //changes done to check if email exists in response array
-          if (in_array($value['event'], $events) && CRM_Utils_Array::value('email', $value['msg'])) {
-          
+          if (in_array($value['event'], $events) && CRM_Utils_Array::value('email', $value['msg']) && 
+            CRM_Utils_Array::value('subaccount', $value['msg']) == $subaccount ) {
             $civimail_bounce_id = CRM_Utils_Array::value('X-CiviMail-Bounce', $value['msg']['metadata'], null);
             $mail_id = '';
             $is_trx_email = false;
