@@ -275,7 +275,7 @@ function mte_civicrm_validate($formName, $fields, $files, $form) {
           CRM_Core_Session::setStatus( ts('Mandrill Subaccount "%1" already present.', array(1 => $id) ), ts('Info'), 'info');
         }
       } catch (Exception $e ) {
-        CRM_Core_Error::fatal('Mandrill exception: ' .  $e->getMessage());
+        return array( 'smtpPassword' => 'Mandrill ' .$e->getMessage());
       }
     }
   }
