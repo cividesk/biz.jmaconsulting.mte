@@ -211,7 +211,7 @@ function _mte_civix_glob($pattern) {
  * $parentId - used internally to recurse in the menu structure
  */
 function _mte_civix_insert_navigation_menu(&$menu, $path, $item, $parentId = NULL) {
-  static $navId;
+  global $navId;
 
   // If we are done going down the path, insert menu
   if (empty($path)) {

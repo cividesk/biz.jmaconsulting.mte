@@ -212,6 +212,12 @@ function mte_civicrm_alterMailParams(&$params) {
     'version' => 3,
     'details' => $params['html'],
   );
+  // do not create activity for error report email
+  $subject = str_replace("%1", "", ts("CiviCRM error at %1"));
+  if (strpos($subject, $activityParams['subject']) !== false) {
+    return false;
+  }
+
   $result = civicrm_api( 'activity','create',$activityParams );
   if(CRM_Utils_Array::value('id', $result)){
     $params['activityId'] = $result['id'];
