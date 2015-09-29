@@ -110,6 +110,14 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
                   'email_id' => $emails['email']['id'],
                   'activity_id' => CRM_Utils_Array::value('metadata', $value['msg']) ? CRM_Utils_Array::value('CiviCRM_Mandrill_id', $value['msg']['metadata']) : null
                 );
+
+                if (!empty($params['activity_id'])) {
+                  $isActivityPresent = CRM_Core_DAO::getFieldValue('CRM_Activity_DAO_Activity', $params['activity_id'], 'id', 'id');
+                  if (!empty($isActivityPresent)) {
+                    unset($params['activity_id']);
+                  }
+                }
+
                 $eventQueue = CRM_Mailing_Event_BAO_Queue::create($params);
                 $event_queue_id = $eventQueue->id;
               }
