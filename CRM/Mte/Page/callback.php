@@ -113,7 +113,7 @@ class CRM_Mte_Page_callback extends CRM_Core_Page {
 
                 if (!empty($params['activity_id'])) {
                   $isActivityPresent = CRM_Core_DAO::getFieldValue('CRM_Activity_DAO_Activity', $params['activity_id'], 'id', 'id');
-                  if (!empty($isActivityPresent)) {
+                  if (empty($isActivityPresent)) {
                     unset($params['activity_id']);
                   }
                 }
