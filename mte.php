@@ -210,7 +210,7 @@ function mte_civicrm_alterMailParams(&$params) {
     'status_id' => 1,
     'priority_id' => 1,
     'version' => 3,
-    'details' => $params['html'],
+    'details' => '',//$params['html'],
   );
   // do not create activity for error report email
   $subject = str_replace("%1", "", ts("CiviCRM error at %1"));
